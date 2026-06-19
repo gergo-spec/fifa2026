@@ -35,6 +35,75 @@ def _fmt(value) -> str:
     return "n/a" if value is None else str(value)
 
 
+def _fmt_recent(matches: list | None) -> str:
+    """Az utolsó N meccs tömör listája (frissebb elöl)."""
+    if not matches:
+        return "nincs adat"
+    parts = []
+    for m in matches[:5]:
+        parts.append(
+            f"{m['utcDate'][:10]} {m['result']} "
+            f"{m['goals_for']}-{m['goals_against']} vs {m['opponent_tla']} ({m['side']})"
+        )
+    return "; ".join(parts)
+
+
+def _fmt_h2h(h2h: dict | None) -> str | None:
+    """Egymás elleni mérleg tömör összegzése.
+
+    Kezeli a fizetős `aggregates` (győzelem-mérleg) és a free tier
+    `resultSet` + `matches` formátumot is; 0 találkozónál ezt jelzi.
+    """
+    if not h2h:
+        return None
+    agg = h2h.get("aggregates") or {}
+    matches = h2h.get("matches") or []
+    count = agg.get("numberOfMatches")
+    if count is None:
+        count = (h2h.get("resultSet") or {}).get("count", len(matches))
+    if not count:
+        return "nincs korábbi találkozó"
+
+    home, away = agg.get("homeTeam") or {}, agg.get("awayTeam") or {}
+    if home.get("wins") is not None:
+        return (
+            f"{count} meccs, hazai gy {home.get('wins')} / "
+            f"döntetlen {home.get('draws')} / vendég gy {away.get('wins')}"
+        )
+    meetings = []
+    for m in matches[:3]:
+        full = m.get("score", {}).get("fullTime", {})
+        meetings.append(
+            f"{m.get('utcDate', '')[:10]} {m['homeTeam'].get('tla', '?')} "
+            f"{full.get('home', '?')}-{full.get('away', '?')} {m['awayTeam'].get('tla', '?')}"
+        )
+    return f"{count} korábbi meccs" + (": " + "; ".join(meetings) if meetings else "")
+
+
+def _fmt_row(row: dict | None) -> str:
+    """Egy csapat tabella-sora tömören (a nyers dict / címer-URL nélkül)."""
+    if not row:
+        return "n/a"
+    team = row.get("team", {})
+    return (
+        f"{team.get('tla', '?')}: {row.get('position')}. hely, {row.get('points')}p, "
+        f"GK {row.get('goalDifference')} ({row.get('goalsFor')}-{row.get('goalsAgainst')}), "
+        f"Gy{row.get('won')}-D{row.get('draw')}-V{row.get('lost')}"
+    )
+
+
+def _fmt_standings_table(standings: dict) -> list[str]:
+    """A teljes csoporttabella soronként (motiváció-kontextushoz)."""
+    rows = []
+    for r in standings.get("table") or []:
+        team = r.get("team", {})
+        rows.append(
+            f"{r.get('position')}. {team.get('tla', '?')} {r.get('points')}p "
+            f"GK{r.get('goalDifference')} (J{r.get('playedGames')})"
+        )
+    return rows
+
+
 def build_prompt(state: dict) -> str:
     """Strukturált, címkézett prompt a jelekből (odds NÉLKÜL)."""
     lines = [
@@ -57,10 +126,17 @@ def build_prompt(state: dict) -> str:
         "Fáradtság (pihenőnapok, meccssűrűség):",
         f"  hazai: {_fmt(state.get('home_fatigue'))}",
         f"  vendég: {_fmt(state.get('away_fatigue'))}",
+        "Utolsó meccsek (frissebb elöl, eredmény + gólok + ellenfél):",
+        f"  hazai: {_fmt_recent(state.get('home_recent_matches'))}",
+        f"  vendég: {_fmt_recent(state.get('away_recent_matches'))}",
         f"Házigazda-előny: {_fmt(state.get('host_advantage'))}",
         f"Helyszín magassága (m): {_fmt(state.get('venue_altitude_m'))}, "
         f"klíma: {_fmt(state.get('venue_climate'))}",
     ]
+
+    h2h = _fmt_h2h(state.get("h2h"))
+    if h2h:
+        lines.append(f"Egymás elleni mérleg (H2H): {h2h}")
 
     standings = state.get("group_standings")
     if standings:
@@ -69,8 +145,11 @@ def build_prompt(state: dict) -> str:
             "Csoportállás (NYERS – ebből vezesd le a motivációt: ki jutott már "
             "tovább, kinek nincs tét, kinek kell konkrét gólkülönbség):",
             f"  csoport: {standings.get('group')}",
-            f"  hazai sor: {_fmt(standings.get('home_row'))}",
-            f"  vendég sor: {_fmt(standings.get('away_row'))}",
+        ]
+        lines += [f"  {row}" for row in _fmt_standings_table(standings)]
+        lines += [
+            f"  hazai sor: {_fmt_row(standings.get('home_row'))}",
+            f"  vendég sor: {_fmt_row(standings.get('away_row'))}",
         ]
 
     lines += [

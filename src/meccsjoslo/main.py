@@ -62,26 +62,33 @@ def run_once(
     now: datetime | None = None,
     sleep: Callable[[float], None] = time.sleep,
     run_date: str | None = None,
+    window_hours: int = 48,
+    on_result: Callable[[dict], None] | None = None,
 ) -> int:
-    """A következő 48h meccsei → gráf → CSV. Visszaadja a feldolgozott meccsek számát."""
+    """A következő `window_hours` óra meccsei → gráf → CSV. Visszaadja a
+    feldolgozott meccsek számát. `on_result` (ha adott) minden kész jóslatra meghívódik."""
     now = now or datetime.now(timezone.utc)
-    cutoff = now + timedelta(hours=48)
+    cutoff = now + timedelta(hours=window_hours)
     run_date = run_date or now.date().isoformat()
 
+    # a dateTo napszintű – lefedjük az ablak utolsó napját is
+    days_span = (cutoff.date() - now.date()).days
     data = client.matches(
         date_from=now.date().isoformat(),
-        date_to=(now.date() + timedelta(days=2)).isoformat(),
+        date_to=(now.date() + timedelta(days=days_span)).isoformat(),
     )
 
     count = 0
     for match in data["matches"]:
         kickoff = _parse(match["utcDate"])
-        if not (now <= kickoff <= cutoff):  # pontos 48h ablak
+        if not (now <= kickoff <= cutoff):  # pontos időablak
             continue
         detail = client.match(match["id"])  # a venue az egyedi meccs-lekérésben van
         state = _input_state(match, detail.get("venue"))
         result = graph.invoke(state)
         append_prediction(result, csv_path, run_date=run_date)
+        if on_result is not None:
+            on_result(result)
         count += 1
         sleep(config.RATE_LIMIT_SLEEP_S)  # rate-limit tisztelet
     return count

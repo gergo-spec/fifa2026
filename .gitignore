@@ -10,8 +10,7 @@ __pycache__/
 .pytest_cache/
 
 # kimenet
-predictions.csv
-predictions_live*.csv
+predictions*.csv
 
 # lokális Claude-beállítás
 .claude/settings.local.json

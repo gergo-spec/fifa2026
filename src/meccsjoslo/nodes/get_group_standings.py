@@ -7,6 +7,14 @@ kell) az LLM végzi a predict node-ban.
 
 from __future__ import annotations
 
+import re
+
+
+def _norm_group(group: str | None) -> str:
+    """A csoportnév normalizálása: a meccs-végpont `GROUP_E`, a standings-végpont
+    `"Group E"` formátumot ad → mindkettő `groupe` lesz."""
+    return re.sub(r"[^a-z0-9]", "", (group or "").lower())
+
 
 def _find_row(table: list[dict], tla: str) -> dict | None:
     return next((row for row in table if row["team"]["tla"] == tla), None)
@@ -17,7 +25,7 @@ def make_get_group_standings(client):
         group = state["group"]
         standings = client.standings()["standings"]
         table = next(
-            (s["table"] for s in standings if s.get("group") == group),
+            (s["table"] for s in standings if _norm_group(s.get("group")) == _norm_group(group)),
             [],
         )
         return {

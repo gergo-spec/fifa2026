@@ -52,11 +52,63 @@ def test_group_stage_raw_standings_in_prompt():
         "group": "GROUP_E",
         "home_row": {"position": 1, "points": 6, "goalDifference": 4},
         "away_row": {"position": 4, "points": 1, "goalDifference": -2},
-        "table": [],
+        "table": [
+            {"position": 1, "team": {"tla": "ECU"}, "points": 6, "goalDifference": 4, "playedGames": 2},
+            {"position": 4, "team": {"tla": "CUW"}, "points": 1, "goalDifference": -2, "playedGames": 2},
+        ],
     }
     prompt = build_prompt(base_state(group_standings=standings))
     assert "GROUP_E" in prompt
     assert "6" in prompt and "Csoportállás" in prompt
+    # a teljes tabella is megjelenik (mindkét csapat sora)
+    assert "ECU" in prompt and "CUW" in prompt
+
+
+def test_recent_matches_and_h2h_in_prompt():
+    state = base_state(
+        home_recent_matches=[
+            {"utcDate": "2026-06-17T18:00:00Z", "result": "W", "goals_for": 3,
+             "goals_against": 1, "opponent_tla": "NOR", "side": "HOME"},
+        ],
+        away_recent_matches=[
+            {"utcDate": "2026-06-17T21:00:00Z", "result": "L", "goals_for": 0,
+             "goals_against": 2, "opponent_tla": "EGY", "side": "HOME"},
+        ],
+        h2h={"aggregates": {
+            "numberOfMatches": 2,
+            "homeTeam": {"wins": 2, "draws": 0},
+            "awayTeam": {"wins": 0, "draws": 0},
+        }},
+    )
+    prompt = build_prompt(state)
+    assert "Utolsó meccsek" in prompt
+    assert "NOR" in prompt and "EGY" in prompt  # konkrét ellenfelek látszanak
+    assert "H2H" in prompt
+    assert "2 meccs" in prompt
+
+
+def test_no_recent_or_h2h_is_handled():
+    prompt = build_prompt(base_state())  # nincs recent/h2h a state-ben
+    assert "Utolsó meccsek" in prompt  # a szekció megvan, "nincs adat" értékkel
+
+
+def test_h2h_free_tier_zero_count():
+    # valós free tier formátum: resultSet.count = 0, nincs aggregates
+    prompt = build_prompt(base_state(h2h={"resultSet": {"count": 0}, "matches": []}))
+    assert "nincs korábbi találkozó" in prompt
+
+
+def test_h2h_free_tier_lists_meetings_without_aggregates():
+    h2h = {
+        "resultSet": {"count": 2},
+        "matches": [
+            {"utcDate": "2022-06-14T11:00:00Z", "homeTeam": {"tla": "JPN"},
+             "awayTeam": {"tla": "TUN"}, "score": {"fullTime": {"home": 3, "away": 0}}},
+        ],
+    }
+    prompt = build_prompt(base_state(h2h=h2h))
+    assert "2 korábbi meccs" in prompt
+    assert "JPN 3-0 TUN" in prompt
 
 
 def test_prompt_never_contains_odds():
