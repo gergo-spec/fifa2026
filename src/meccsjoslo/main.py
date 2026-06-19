@@ -7,6 +7,7 @@ valós függőségeket köti be (football-data kliens + Gemini predictor).
 
 from __future__ import annotations
 
+import contextlib
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -21,6 +22,22 @@ from meccsjoslo.nodes.predict import gemini_predictor
 
 def _parse(utc: str) -> datetime:
     return datetime.fromisoformat(utc.replace("Z", "+00:00"))
+
+
+def make_session_id(model: str, now: datetime | None = None) -> str:
+    """Egy futás azonosítója – ez alá kerül a futás összes Langfuse-trace-e."""
+    now = now or datetime.now(timezone.utc)
+    return f"meccsjoslo-{model}-{now:%Y%m%dT%H%M%SZ}"
+
+
+def session_scope(langfuse, session_id: str, model: str):
+    """Context manager, ami a benne létrejövő összes span-re ráteszi a
+    session_id-t (és a modell taget). Langfuse nélkül no-op."""
+    if langfuse is None:
+        return contextlib.nullcontext()
+    from langfuse import propagate_attributes
+
+    return propagate_attributes(session_id=session_id, tags=[f"model:{model}"])
 
 
 def _input_state(match: dict, venue: str | None) -> dict:
@@ -72,20 +89,21 @@ def run_once(
 
 def main() -> None:
     cfg = config.load_env()
+    model = config.gemini_model(cfg)
     client = FootballDataClient(token=config.football_data_token(cfg))
     langfuse = config.langfuse_client(cfg)
     predictor = gemini_predictor(
-        model=config.gemini_model(cfg),
-        api_key=config.gemini_api_key(cfg),
-        langfuse=langfuse,
+        model=model, api_key=config.gemini_api_key(cfg), langfuse=langfuse
     )
     graph = default_graph(client, predictor)
+    session_id = make_session_id(model)
     try:
-        count = run_once(client, graph)
+        with session_scope(langfuse, session_id, model):
+            count = run_once(client, graph)
     finally:
         if langfuse is not None:
             langfuse.flush()  # a rövid életű folyamat végén kiküldjük a trace-eket
-    print(f"Kész: {count} meccs megjósolva → {config.OUTPUT_CSV}")
+    print(f"Kész: {count} meccs megjósolva → {config.OUTPUT_CSV} (session: {session_id})")
 
 
 if __name__ == "__main__":

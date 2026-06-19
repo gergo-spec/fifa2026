@@ -15,7 +15,7 @@ from meccsjoslo import config
 from meccsjoslo.clients.football_data import FootballDataClient
 from meccsjoslo.graph import default_graph
 from meccsjoslo.logging_csv import append_prediction
-from meccsjoslo.main import _input_state
+from meccsjoslo.main import _input_state, make_session_id, session_scope
 from meccsjoslo.nodes.predict import gemini_predictor
 
 # A 4 teszteset valós football-data match ID-ja (2026-06-21).
@@ -74,32 +74,36 @@ def main() -> None:
 
     safe = model.replace(".", "_").replace("/", "_")
     out_csv = config.PROJECT_ROOT / f"predictions_live_{safe}.csv"
+    session_id = make_session_id(model)
     print(
         f"Modell: {model}\nKimenet: {out_csv}\n"
         f"Langfuse: {'bekötve' if langfuse else 'nincs konfigurálva'}\n"
+        f"Session: {session_id if langfuse else '-'}\n"
     )
 
-    for match_id in MATCH_IDS:
-        detail = client.match(match_id)
-        state = _input_state(detail, detail.get("venue"))
-        label = f"{state['home_name']} vs {state['away_name']} ({state.get('group')})"
-        try:
-            result = _predict_match(graph, state, label, langfuse)
-        except Exception as exc:  # pl. modell-404 vagy LLM hiba
-            print(f"✗ {label}: HIBA – {type(exc).__name__}: {exc}\n")
-            continue
+    # a futás összes trace-e egy session alá kerül
+    with session_scope(langfuse, session_id, model):
+        for match_id in MATCH_IDS:
+            detail = client.match(match_id)
+            state = _input_state(detail, detail.get("venue"))
+            label = f"{state['home_name']} vs {state['away_name']} ({state.get('group')})"
+            try:
+                result = _predict_match(graph, state, label, langfuse)
+            except Exception as exc:  # pl. modell-404 vagy LLM hiba
+                print(f"✗ {label}: HIBA – {type(exc).__name__}: {exc}\n")
+                continue
 
-        append_prediction(result, out_csv)
-        print(
-            f"✓ {label}\n"
-            f"   FIFA: #{result.get('home_rank')} vs #{result.get('away_rank')} "
-            f"(diff {result.get('rank_diff')}) | venue: {state.get('venue')} "
-            f"({result.get('venue_climate')}, {result.get('venue_altitude_m')} m)\n"
-            f"   P(hazai/döntetlen/vendég) = "
-            f"{result['prob_home']:.2f} / {result['prob_draw']:.2f} / {result['prob_away']:.2f}\n"
-            f"   Várható gól: {result['expected_goals_home']:.1f} - {result['expected_goals_away']:.1f}\n"
-            f"   Indoklás: {result['rationale']}\n"
-        )
+            append_prediction(result, out_csv)
+            print(
+                f"✓ {label}\n"
+                f"   FIFA: #{result.get('home_rank')} vs #{result.get('away_rank')} "
+                f"(diff {result.get('rank_diff')}) | venue: {state.get('venue')} "
+                f"({result.get('venue_climate')}, {result.get('venue_altitude_m')} m)\n"
+                f"   P(hazai/döntetlen/vendég) = "
+                f"{result['prob_home']:.2f} / {result['prob_draw']:.2f} / {result['prob_away']:.2f}\n"
+                f"   Várható gól: {result['expected_goals_home']:.1f} - {result['expected_goals_away']:.1f}\n"
+                f"   Indoklás: {result['rationale']}\n"
+            )
 
     if langfuse is not None:
         langfuse.flush()  # trace-ek kiküldése a rövid életű folyamat végén
