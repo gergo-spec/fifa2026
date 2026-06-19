@@ -1,0 +1,30 @@
+{
+  "competition": { "id": 2000, "name": "FIFA World Cup", "code": "WC", "type": "CUP" },
+  "season": { "id": 1635, "startDate": "2026-06-11", "endDate": "2026-07-19", "currentMatchday": 3 },
+  "standings": [
+    { "stage": "GROUP_STAGE", "type": "TOTAL", "group": "GROUP_E", "table": [
+      { "position": 1, "team": { "id": 2122, "name": "Ecuador", "tla": "ECU" }, "playedGames": 2, "form": "W,W", "won": 2, "draw": 0, "lost": 0, "points": 6, "goalsFor": 5, "goalsAgainst": 1, "goalDifference": 4 },
+      { "position": 2, "team": { "id": 8497, "name": "Egypt", "tla": "EGY" }, "playedGames": 2, "form": "L,W", "won": 1, "draw": 0, "lost": 1, "points": 3, "goalsFor": 2, "goalsAgainst": 2, "goalDifference": 0 },
+      { "position": 3, "team": { "id": 782, "name": "Norway", "tla": "NOR" }, "playedGames": 2, "form": "D,L", "won": 0, "draw": 1, "lost": 1, "points": 1, "goalsFor": 2, "goalsAgainst": 4, "goalDifference": -2 },
+      { "position": 4, "team": { "id": 2245, "name": "Curaçao", "tla": "CUW" }, "playedGames": 2, "form": "D,L", "won": 0, "draw": 1, "lost": 1, "points": 1, "goalsFor": 1, "goalsAgainst": 3, "goalDifference": -2 }
+    ] },
+    { "stage": "GROUP_STAGE", "type": "TOTAL", "group": "GROUP_F", "table": [
+      { "position": 1, "team": { "id": 766, "name": "Japan", "tla": "JPN" }, "playedGames": 2, "form": "W,D", "won": 1, "draw": 1, "lost": 0, "points": 4, "goalsFor": 3, "goalsAgainst": 2, "goalDifference": 1 },
+      { "position": 2, "team": { "id": 799, "name": "Croatia", "tla": "CRO" }, "playedGames": 2, "form": "W,D", "won": 1, "draw": 1, "lost": 0, "points": 4, "goalsFor": 2, "goalsAgainst": 1, "goalDifference": 1 },
+      { "position": 3, "team": { "id": 8493, "name": "Tunisia", "tla": "TUN" }, "playedGames": 2, "form": "L,W", "won": 1, "draw": 0, "lost": 1, "points": 3, "goalsFor": 2, "goalsAgainst": 1, "goalDifference": 1 },
+      { "position": 4, "team": { "id": 8494, "name": "Panama", "tla": "PAN" }, "playedGames": 2, "form": "L,L", "won": 0, "draw": 0, "lost": 2, "points": 0, "goalsFor": 1, "goalsAgainst": 4, "goalDifference": -3 }
+    ] },
+    { "stage": "GROUP_STAGE", "type": "TOTAL", "group": "GROUP_G", "table": [
+      { "position": 1, "team": { "id": 805, "name": "Belgium", "tla": "BEL" }, "playedGames": 2, "form": "W,D", "won": 1, "draw": 1, "lost": 0, "points": 4, "goalsFor": 5, "goalsAgainst": 2, "goalDifference": 3 },
+      { "position": 2, "team": { "id": 2098, "name": "Iran", "tla": "IRN" }, "playedGames": 2, "form": "D,W", "won": 1, "draw": 1, "lost": 0, "points": 4, "goalsFor": 2, "goalsAgainst": 1, "goalDifference": 1 },
+      { "position": 3, "team": { "id": 762, "name": "Senegal", "tla": "SEN" }, "playedGames": 2, "form": "D,D", "won": 0, "draw": 2, "lost": 0, "points": 2, "goalsFor": 3, "goalsAgainst": 3, "goalDifference": 0 },
+      { "position": 4, "team": { "id": 2247, "name": "Haiti", "tla": "HAI" }, "playedGames": 2, "form": "L,L", "won": 0, "draw": 0, "lost": 2, "points": 0, "goalsFor": 0, "goalsAgainst": 4, "goalDifference": -4 }
+    ] },
+    { "stage": "GROUP_STAGE", "type": "TOTAL", "group": "GROUP_H", "table": [
+      { "position": 1, "team": { "id": 760, "name": "Spain", "tla": "ESP" }, "playedGames": 2, "form": "W,D", "won": 1, "draw": 1, "lost": 0, "points": 4, "goalsFor": 3, "goalsAgainst": 1, "goalDifference": 2 },
+      { "position": 2, "team": { "id": 758, "name": "Uruguay", "tla": "URU" }, "playedGames": 2, "form": "W,D", "won": 1, "draw": 1, "lost": 0, "points": 4, "goalsFor": 2, "goalsAgainst": 1, "goalDifference": 1 },
+      { "position": 3, "team": { "id": 8491, "name": "Saudi Arabia", "tla": "KSA" }, "playedGames": 2, "form": "L,D", "won": 0, "draw": 1, "lost": 1, "points": 1, "goalsFor": 0, "goalsAgainst": 1, "goalDifference": -1 },
+      { "position": 4, "team": { "id": 768, "name": "Scotland", "tla": "SCO" }, "playedGames": 2, "form": "L,D", "won": 0, "draw": 1, "lost": 1, "points": 1, "goalsFor": 0, "goalsAgainst": 2, "goalDifference": -2 }
+    ] }
+  ]
+}

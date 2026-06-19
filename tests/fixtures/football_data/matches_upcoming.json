@@ -1,0 +1,23 @@
+{
+  "filters": { "competitions": "2000", "dateFrom": "2026-06-21", "dateTo": "2026-06-23" },
+  "competition": { "id": 2000, "name": "FIFA World Cup", "code": "WC", "type": "CUP" },
+  "count": 4,
+  "matches": [
+    { "id": 537401, "utcDate": "2026-06-21T00:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_E",
+      "homeTeam": { "id": 2122, "name": "Ecuador", "tla": "ECU" }, "awayTeam": { "id": 2245, "name": "Curaçao", "tla": "CUW" },
+      "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+      "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." } },
+    { "id": 537402, "utcDate": "2026-06-21T04:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_F",
+      "homeTeam": { "id": 8493, "name": "Tunisia", "tla": "TUN" }, "awayTeam": { "id": 766, "name": "Japan", "tla": "JPN" },
+      "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+      "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." } },
+    { "id": 537403, "utcDate": "2026-06-21T16:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_H",
+      "homeTeam": { "id": 760, "name": "Spain", "tla": "ESP" }, "awayTeam": { "id": 8491, "name": "Saudi Arabia", "tla": "KSA" },
+      "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+      "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." } },
+    { "id": 537404, "utcDate": "2026-06-21T19:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_G",
+      "homeTeam": { "id": 805, "name": "Belgium", "tla": "BEL" }, "awayTeam": { "id": 2098, "name": "Iran", "tla": "IRN" },
+      "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+      "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." } }
+  ]
+}

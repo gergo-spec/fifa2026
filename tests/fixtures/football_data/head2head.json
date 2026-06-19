@@ -1,0 +1,48 @@
+{
+  "_note": "A fake site ezt a /matches/{id}/head2head válaszként adja vissza (a megjósolandó meccs id-je szerint kulcsolva). aggregates + korábbi találkozók.",
+  "537401": {
+    "aggregates": {
+      "numberOfMatches": 2, "totalGoals": 6,
+      "homeTeam": { "id": 2122, "name": "Ecuador", "wins": 2, "draws": 0, "losses": 0 },
+      "awayTeam": { "id": 2245, "name": "Curaçao", "wins": 0, "draws": 0, "losses": 2 }
+    },
+    "matches": [
+      { "id": 511001, "utcDate": "2023-06-17T20:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Ecuador", "tla": "ECU" }, "awayTeam": { "name": "Curaçao", "tla": "CUW" }, "score": { "winner": "HOME_TEAM", "fullTime": { "home": 3, "away": 1 } } },
+      { "id": 511002, "utcDate": "2019-06-09T22:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Curaçao", "tla": "CUW" }, "awayTeam": { "name": "Ecuador", "tla": "ECU" }, "score": { "winner": "AWAY_TEAM", "fullTime": { "home": 0, "away": 2 } } }
+    ]
+  },
+  "537402": {
+    "aggregates": {
+      "numberOfMatches": 3, "totalGoals": 6,
+      "homeTeam": { "id": 8493, "name": "Tunisia", "wins": 0, "draws": 1, "losses": 2 },
+      "awayTeam": { "id": 766, "name": "Japan", "wins": 2, "draws": 1, "losses": 0 }
+    },
+    "matches": [
+      { "id": 512001, "utcDate": "2022-06-14T11:20:00Z", "status": "FINISHED", "homeTeam": { "name": "Japan", "tla": "JPN" }, "awayTeam": { "name": "Tunisia", "tla": "TUN" }, "score": { "winner": "HOME_TEAM", "fullTime": { "home": 3, "away": 0 } } },
+      { "id": 512002, "utcDate": "2018-09-11T18:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Tunisia", "tla": "TUN" }, "awayTeam": { "name": "Japan", "tla": "JPN" }, "score": { "winner": "DRAW", "fullTime": { "home": 1, "away": 1 } } },
+      { "id": 512003, "utcDate": "2015-03-27T18:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Japan", "tla": "JPN" }, "awayTeam": { "name": "Tunisia", "tla": "TUN" }, "score": { "winner": "HOME_TEAM", "fullTime": { "home": 1, "away": 0 } } }
+    ]
+  },
+  "537403": {
+    "aggregates": {
+      "numberOfMatches": 2, "totalGoals": 7,
+      "homeTeam": { "id": 760, "name": "Spain", "wins": 2, "draws": 0, "losses": 0 },
+      "awayTeam": { "id": 8491, "name": "Saudi Arabia", "wins": 0, "draws": 0, "losses": 2 }
+    },
+    "matches": [
+      { "id": 513001, "utcDate": "2018-09-11T19:45:00Z", "status": "FINISHED", "homeTeam": { "name": "Spain", "tla": "ESP" }, "awayTeam": { "name": "Saudi Arabia", "tla": "KSA" }, "score": { "winner": "HOME_TEAM", "fullTime": { "home": 4, "away": 1 } } },
+      { "id": 513002, "utcDate": "2014-05-29T18:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Saudi Arabia", "tla": "KSA" }, "awayTeam": { "name": "Spain", "tla": "ESP" }, "score": { "winner": "AWAY_TEAM", "fullTime": { "home": 0, "away": 2 } } }
+    ]
+  },
+  "537404": {
+    "aggregates": {
+      "numberOfMatches": 2, "totalGoals": 3,
+      "homeTeam": { "id": 805, "name": "Belgium", "wins": 1, "draws": 1, "losses": 0 },
+      "awayTeam": { "id": 2098, "name": "Iran", "wins": 0, "draws": 1, "losses": 1 }
+    },
+    "matches": [
+      { "id": 514001, "utcDate": "2014-06-22T16:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Belgium", "tla": "BEL" }, "awayTeam": { "name": "Iran", "tla": "IRN" }, "score": { "winner": "HOME_TEAM", "fullTime": { "home": 1, "away": 0 } } },
+      { "id": 514002, "utcDate": "2018-03-27T19:00:00Z", "status": "FINISHED", "homeTeam": { "name": "Iran", "tla": "IRN" }, "awayTeam": { "name": "Belgium", "tla": "BEL" }, "score": { "winner": "DRAW", "fullTime": { "home": 1, "away": 1 } } }
+    ]
+  }
+}

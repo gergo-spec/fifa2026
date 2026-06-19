@@ -1,0 +1,35 @@
+{
+  "_note": "A fake site ezt a /matches/{id} válaszként adja vissza (id szerint kikulcsolva). Tartalmazza a venue mezőt és a referees listát, ahogy a valós egyedi meccs-lekérés.",
+  "537401": {
+    "id": 537401, "utcDate": "2026-06-21T00:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_E",
+    "venue": "Estadio Azteca",
+    "homeTeam": { "id": 2122, "name": "Ecuador", "tla": "ECU" }, "awayTeam": { "id": 2245, "name": "Curaçao", "tla": "CUW" },
+    "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+    "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." },
+    "referees": [ { "id": 57001, "name": "César Arturo Ramos", "type": "REFEREE", "nationality": "Mexico" } ]
+  },
+  "537402": {
+    "id": 537402, "utcDate": "2026-06-21T04:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_F",
+    "venue": "Hard Rock Stadium",
+    "homeTeam": { "id": 8493, "name": "Tunisia", "tla": "TUN" }, "awayTeam": { "id": 766, "name": "Japan", "tla": "JPN" },
+    "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+    "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." },
+    "referees": [ { "id": 57002, "name": "Szymon Marciniak", "type": "REFEREE", "nationality": "Poland" } ]
+  },
+  "537403": {
+    "id": 537403, "utcDate": "2026-06-21T16:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_H",
+    "venue": "MetLife Stadium",
+    "homeTeam": { "id": 760, "name": "Spain", "tla": "ESP" }, "awayTeam": { "id": 8491, "name": "Saudi Arabia", "tla": "KSA" },
+    "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+    "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." },
+    "referees": [ { "id": 57003, "name": "Clément Turpin", "type": "REFEREE", "nationality": "France" } ]
+  },
+  "537404": {
+    "id": 537404, "utcDate": "2026-06-21T19:00:00Z", "status": "SCHEDULED", "matchday": 3, "stage": "GROUP_STAGE", "group": "GROUP_G",
+    "venue": "BMO Field",
+    "homeTeam": { "id": 805, "name": "Belgium", "tla": "BEL" }, "awayTeam": { "id": 2098, "name": "Iran", "tla": "IRN" },
+    "score": { "winner": null, "duration": "REGULAR", "fullTime": { "home": null, "away": null }, "halfTime": { "home": null, "away": null } },
+    "odds": { "msg": "Activate Odds-Package in User-Panel to retrieve odds." },
+    "referees": [ { "id": 57004, "name": "Anthony Taylor", "type": "REFEREE", "nationality": "England" } ]
+  }
+}

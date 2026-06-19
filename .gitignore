@@ -1,0 +1,17 @@
+# titkok
+.env
+
+# uv / virtualenv
+.venv/
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# kimenet
+predictions.csv
+predictions_live*.csv
+
+# lokális Claude-beállítás
+.claude/settings.local.json

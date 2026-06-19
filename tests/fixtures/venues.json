@@ -1,0 +1,7 @@
+{
+  "_note": "Teszt-venue tábla a fixture-meccsekhez (a valós data/venues.json külön, Story 006 adatfeladata). country = football-data tla; HOST_NATIONS = {USA, MEX, CAN}.",
+  "Estadio Azteca":    { "city": "Mexico City",      "country": "MEX", "altitude_m": 2240, "climate": "high-altitude" },
+  "Hard Rock Stadium": { "city": "Miami",            "country": "USA", "altitude_m": 2,    "climate": "hot-humid" },
+  "MetLife Stadium":   { "city": "East Rutherford",  "country": "USA", "altitude_m": 5,    "climate": "temperate" },
+  "BMO Field":         { "city": "Toronto",          "country": "CAN", "altitude_m": 76,   "climate": "temperate" }
+}

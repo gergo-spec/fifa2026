@@ -1,0 +1,9 @@
+{
+  "_note": "VB 2026 helyszín-tábla a venue-jelekhez (házigazda/klíma/magasság). country = football-data tla; HOST_NATIONS = {USA, MEX, CAN}. RÉSZLEGES: egyelőre a tesztelt helyszínek; a teljes 16-os listát fel kell tölteni (Story 006 adatfeladat).",
+  "Estadio Azteca":    { "city": "Mexico City",     "country": "MEX", "altitude_m": 2240, "climate": "high-altitude" },
+  "Estadio Akron":     { "city": "Guadalajara",     "country": "MEX", "altitude_m": 1566, "climate": "high-altitude" },
+  "Estadio BBVA":      { "city": "Monterrey",       "country": "MEX", "altitude_m": 540,  "climate": "hot-dry" },
+  "Hard Rock Stadium": { "city": "Miami",           "country": "USA", "altitude_m": 2,    "climate": "hot-humid" },
+  "MetLife Stadium":   { "city": "East Rutherford", "country": "USA", "altitude_m": 5,    "climate": "temperate" },
+  "BMO Field":         { "city": "Toronto",         "country": "CAN", "altitude_m": 76,   "climate": "temperate" }
+}
