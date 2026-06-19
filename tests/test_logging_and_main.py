@@ -37,6 +37,19 @@ def test_append_writes_header_once_with_stable_columns(tmp_path):
     assert list(rows[0].keys()) == COLUMNS
 
 
+def test_expected_goals_rounded_to_int_in_csv(tmp_path):
+    # a CSV-t egy következő layer eszi, ami nem kezel floatot → egész gólszám
+    p = tmp_path / "out.csv"
+    append_prediction(
+        {"match_id": 1, "expected_goals_home": 2.8, "expected_goals_away": 0.4},
+        p,
+        run_date="2026-06-19",
+    )
+    row = _read(p)[0]
+    assert row["expected_goals_home"] == "3"
+    assert row["expected_goals_away"] == "0"
+
+
 def test_decimal_point_and_quoted_rationale(tmp_path):
     p = tmp_path / "out.csv"
     append_prediction(
@@ -80,6 +93,19 @@ def test_run_once_filters_to_48h_window(tmp_path):
     assert {r["home_tla"] for r in rows} == {"ESP", "BEL"}
     assert all(r["run_date"] == now.date().isoformat() for r in rows)
     assert sleeps  # rate-limit szünet meghívódott
+
+
+def test_run_once_respects_window_hours(tmp_path):
+    client = _client()
+    csv_path = tmp_path / "w.csv"
+    now = datetime(2026, 6, 20, 18, 0, tzinfo=timezone.utc)  # 06-20 18:00Z
+    # 12h ablak → cutoff 06-21 06:00Z → csak a 00:00 és 04:00 meccs
+    count = run_once(
+        client, _graph(client), csv_path=csv_path, now=now,
+        window_hours=12, sleep=lambda s: None,
+    )
+    assert count == 2
+    assert {r["home_tla"] for r in _read(csv_path)} == {"ECU", "TUN"}
 
 
 def test_run_once_full_window_predicts_all_four(tmp_path):

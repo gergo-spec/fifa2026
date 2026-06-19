@@ -49,6 +49,10 @@ def append_prediction(
     run_date = run_date or _today_utc()
     row = {col: ("" if state.get(col) is None else state.get(col)) for col in COLUMNS}
     row["run_date"] = run_date
+    # a következő layer egész gólszámot vár (a Langfuse-logban marad a float)
+    for col in ("expected_goals_home", "expected_goals_away"):
+        if row[col] != "":
+            row[col] = int(round(float(row[col])))
 
     is_new = not path.exists() or path.stat().st_size == 0
     with path.open("a", newline="", encoding="utf-8") as f:
