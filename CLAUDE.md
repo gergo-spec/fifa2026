@@ -72,6 +72,27 @@ match input (48h ablakból)
 - **Evaluate / Brier-score nincs ebben a repóban.** A CSV-naplót egy külön
   repóban készülő tool értékeli ki később — a CSV-séma stabil maradjon.
 
+## tipp.ly publikálás (opcionális)
+
+A jóslat **pontos eredmény** tippjét (kerekített expected goals) fel lehet tenni a
+**tipp.ly** oldalra böngésző-automatizálással (Playwright + Gemini locate). Az
+`src/meccsjoslo/tipply/` csomag (a korábbi külön projekt beépített portja).
+
+- **Kapuzott, opcionális:** csak `TIPPLY_PUBLISH=1` + `TIPPLY_EMAIL`/`TIPPLY_PASSWORD`
+  esetén fut; egyébként `make_tipply_sink(...)` `None` → no-op. A
+  `run_once(on_result=...)` horogba kötve, meccsenként.
+- **Dry-run alapból**, tényleges mentés csak `TIPPLY_SUBMIT=1`.
+- **Csapatnevek:** a fixture-guard a magyar neveket várja → `data/teams_hu.json`
+  (TLA→magyar). Angol nevek a nem-rokon eseteknél elbuknának.
+- **Locate LLM:** `langchain-google-genai` (`with_structured_output(LocatePlan)`),
+  a meglévő `GEMINI-API-KEY`/`GEMINI-MODEL`-lel.
+- **Session:** `storage_state.json` (bejelentkezett tipp.ly session) a projektgyökérben
+  (`TIPPLY_STORAGE_STATE`-tel felülírható). **Gitignore** – titok, nem commitba.
+- **Guardrailek:** bot-wall stop, confidence gate, fixture-guard, idempotencia
+  (létező tipp skip), read-back verify; egy meccs/böngésző-session, ember-tempó.
+- A böngészőhöz: `uv run playwright install chromium` (+ WSL: `sudo uv run
+  playwright install-deps chromium`).
+
 ## Projektstruktúra (cél)
 
 ```
@@ -91,9 +112,15 @@ src/meccsjoslo/
     get_group_standings.py
     predict.py
   logging_csv.py         # jóslat → CSV append
+  tipply/                # opcionális tipp.ly publikálás (Playwright + Gemini locate)
+    sink.py              # on_result sink: result → Match/Score, kapuzott
+    publisher.py, browser.py, login.py, fill.py, verify.py, submit.py
+    locate.py, llm.py, fixtures.py, snapshot.py, state.py, config.py
 data/
   fifa_ranking_2026-06-11.json   # FIFA ranglista (48 csapat, tla kulcs)
   venues.json                    # 16 helyszín: ország, magasság, klíma
+  teams_hu.json                  # TLA → magyar csapatnév (tipp.ly fixture-illesztés)
+storage_state.json       # tipp.ly bejelentkezett session (gitignore)
 tests/
 spec/
   stories/               # TDD story-k
@@ -115,6 +142,11 @@ GEMINI-MODEL=gemini-3.1-flash-lite
 LANGFUSE_PUBLIC_KEY=<kulcs>
 LANGFUSE_SECRET_KEY=<kulcs>
 LANGFUSE_BASE_URL=<host, pl. http://localhost:3000>
+# opcionális tipp.ly publikálás:
+TIPPLY_EMAIL=<email>
+TIPPLY_PASSWORD=<jelszó>
+TIPPLY_PUBLISH=1          # inline publikálás be (0/üres = ki)
+TIPPLY_SUBMIT=0          # 1 = tényleges mentés, különben dry-run
 ```
 
 ## Observability (Langfuse)

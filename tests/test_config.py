@@ -91,3 +91,22 @@ def test_host_nations_are_the_three_co_hosts():
 def test_langfuse_client_none_when_keys_absent(tmp_path):
     cfg = config.load_env(_write_env(tmp_path, "GEMINI-API-KEY:gk\n"))
     assert config.langfuse_client(cfg) is None
+
+
+def test_tipply_config_none_when_no_credentials(tmp_path):
+    cfg = config.load_env(_write_env(tmp_path, "GEMINI-API-KEY:gk\n"))
+    assert config.tipply_config(cfg) is None
+
+
+def test_tipply_config_built_from_credentials(tmp_path):
+    cfg = config.load_env(_write_env(tmp_path, "TIPPLY_EMAIL=e@x\nTIPPLY_PASSWORD=pw\n"))
+    tc = config.tipply_config(cfg)
+    assert tc is not None
+    assert tc.email == "e@x"
+    assert tc.bets_url.endswith("/hu/bets")
+
+
+def test_tipply_flags(tmp_path):
+    cfg = config.load_env(_write_env(tmp_path, "TIPPLY_PUBLISH=1\nTIPPLY_SUBMIT=0\n"))
+    assert config.tipply_publish_enabled(cfg) is True
+    assert config.tipply_submit_enabled(cfg) is False

@@ -1,5 +1,12 @@
 # titkok
 .env
+storage_state.json
+
+# tipp.ly futás-artefaktumok
+tipply_runs/
+
+# külső, ideiglenes projekt (beportolva a src/meccsjoslo/tipply alá; törlésre vár)
+external_tiply_temp_folder/
 
 # uv / virtualenv
 .venv/

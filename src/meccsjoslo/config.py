@@ -96,3 +96,42 @@ def langfuse_client(cfg: dict[str, str] | None = None):
         secret_key=secret,
         base_url=cfg.get("LANGFUSE_BASE_URL"),
     )
+
+
+def _truthy(value: str | None) -> bool:
+    return (value or "").strip().lower() in {"1", "true", "yes", "on", "igen"}
+
+
+def tipply_config(cfg: dict[str, str] | None = None):
+    """tipp.ly futás-konfiguráció a `.env`-ből, vagy `None`, ha nincs beállítva.
+
+    Kötelező kulcsok: `TIPPLY_EMAIL`, `TIPPLY_PASSWORD`. Opcionális:
+    `TIPPLY_BASE_URL`, `TIPPLY_STORAGE_STATE` (default a projektgyökér
+    `storage_state.json`-ja).
+    """
+    cfg = _resolve(cfg)
+    email = cfg.get("TIPPLY_EMAIL")
+    password = cfg.get("TIPPLY_PASSWORD")
+    if not (email and password):
+        return None
+    from pydantic import SecretStr
+
+    from meccsjoslo.tipply.config import TipplyConfig
+
+    storage = cfg.get("TIPPLY_STORAGE_STATE") or str(PROJECT_ROOT / "storage_state.json")
+    return TipplyConfig(
+        email=email,
+        password=SecretStr(password),
+        base_url=cfg.get("TIPPLY_BASE_URL", "https://tipp.ly"),
+        storage_state_path=storage,
+    )
+
+
+def tipply_publish_enabled(cfg: dict[str, str] | None = None) -> bool:
+    """Inline tipp.ly publikálás be van-e kapcsolva (`TIPPLY_PUBLISH`)."""
+    return _truthy(_resolve(cfg).get("TIPPLY_PUBLISH"))
+
+
+def tipply_submit_enabled(cfg: dict[str, str] | None = None) -> bool:
+    """Tényleges submit (nem csak dry-run) be van-e kapcsolva (`TIPPLY_SUBMIT`)."""
+    return _truthy(_resolve(cfg).get("TIPPLY_SUBMIT"))

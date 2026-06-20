@@ -13,8 +13,9 @@ from datetime import datetime, timezone
 from meccsjoslo import config
 from meccsjoslo.clients.football_data import FootballDataClient
 from meccsjoslo.graph import default_graph
-from meccsjoslo.main import make_session_id, run_once, session_scope
+from meccsjoslo.main import combine_results, make_session_id, run_once, session_scope
 from meccsjoslo.nodes.predict import gemini_predictor
+from meccsjoslo.tipply.sink import make_tipply_sink
 
 
 class MemoizingClient:
@@ -48,13 +49,15 @@ def main() -> None:
     )
     graph = default_graph(client, predictor)
 
+    sink = make_tipply_sink(cfg)  # opcionális tipp.ly publikálás
     now = datetime.now(timezone.utc)
     session_id = make_session_id(model)
     out_csv = config.PROJECT_ROOT / f"predictions_next{hours}h.csv"
     print(
         f"Most (UTC): {now:%Y-%m-%d %H:%M}  |  ablak: {hours} óra  |  modell: {model}\n"
         f"Kimenet: {out_csv}  |  Langfuse: {'bekötve' if langfuse else '-'}  |  "
-        f"session: {session_id if langfuse else '-'}\n"
+        f"session: {session_id if langfuse else '-'}  |  "
+        f"tipp.ly: {'bekötve' if sink else '-'}\n"
     )
 
     def show(r: dict) -> None:
@@ -71,7 +74,7 @@ def main() -> None:
         with session_scope(langfuse, session_id, model):
             count = run_once(
                 client, graph, csv_path=out_csv, now=now,
-                window_hours=hours, on_result=show,
+                window_hours=hours, on_result=combine_results(show, sink),
             )
     finally:
         if langfuse is not None:

@@ -18,10 +18,24 @@ from meccsjoslo.clients.football_data import FootballDataClient
 from meccsjoslo.graph import default_graph
 from meccsjoslo.logging_csv import append_prediction
 from meccsjoslo.nodes.predict import gemini_predictor
+from meccsjoslo.tipply.sink import make_tipply_sink
 
 
 def _parse(utc: str) -> datetime:
     return datetime.fromisoformat(utc.replace("Z", "+00:00"))
+
+
+def combine_results(*callbacks) -> Callable[[dict], None] | None:
+    """Több `on_result` callback egyesítése (a `None`-okat kihagyja)."""
+    active = [cb for cb in callbacks if cb is not None]
+    if not active:
+        return None
+
+    def _combined(result: dict) -> None:
+        for cb in active:
+            cb(result)
+
+    return _combined
 
 
 def make_session_id(model: str, now: datetime | None = None) -> str:
@@ -103,10 +117,11 @@ def main() -> None:
         model=model, api_key=config.gemini_api_key(cfg), langfuse=langfuse
     )
     graph = default_graph(client, predictor)
+    sink = make_tipply_sink(cfg)  # opcionális tipp.ly publikálás (no-op ha kikapcsolt)
     session_id = make_session_id(model)
     try:
         with session_scope(langfuse, session_id, model):
-            count = run_once(client, graph)
+            count = run_once(client, graph, on_result=sink)
     finally:
         if langfuse is not None:
             langfuse.flush()  # a rövid életű folyamat végén kiküldjük a trace-eket
