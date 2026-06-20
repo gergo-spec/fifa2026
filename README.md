@@ -89,6 +89,33 @@ uv run pytest            # teljes készlet (böngésző/hálózat nélkül, mock
 uv run pytest -q tests/test_tipply_flow.py
 ```
 
+## Ütemezés (cron) — minden reggel 08:00 budapesti idő
+
+`crontab -e`, és tedd be (a `meccsjoslo` entrypoint a napi 48h-s futás, tipp.ly +
+ntfy bekötve):
+
+```cron
+CRON_TZ=Europe/Budapest
+0 8 * * * cd /home/gergo/job/apisport && /home/gergo/.local/bin/uv run meccsjoslo >> /home/gergo/job/apisport/cron.log 2>&1
+```
+
+Egyéni ablakhoz a 48h helyett (pl. következő 24h):
+
+```cron
+0 8 * * * cd /home/gergo/job/apisport && /home/gergo/.local/bin/uv run python scripts/predict_window.py 24 >> /home/gergo/job/apisport/cron.log 2>&1
+```
+
+- `CRON_TZ=Europe/Budapest` → DST-biztos (08:00 helyi idő nyáron-télen is).
+- `cd ...` + abszolút `uv` út: a cronnak minimális a PATH-a, és így találja a `.venv`-et.
+- A publikáláshoz a `.env`-ben `TIPPLY_PUBLISH=1` kell (és `TIPPLY_SUBMIT=1` az éles mentéshez).
+
+**⚠️ WSL:** a cron nem indul magától. Indítás: `sudo service cron start` (a WSL
+leállásakor megáll). Tartós megoldás: systemd a `/etc/wsl.conf`-ban
+(`[boot]\nsystemd=true`), majd `sudo systemctl enable --now cron`. A gépnek +
+WSL-nek futnia kell 08:00-kor — megbízhatóbb alternatíva a **Windows
+Feladatütemező**, ami felébreszti a gépet és elindítja:
+`wsl -d <distro> -- bash -lc "cd /home/gergo/job/apisport && /home/gergo/.local/bin/uv run meccsjoslo >> cron.log 2>&1"`.
+
 ## Hasznos tudni
 
 - **Idő:** minden UTC-ben (`utcDate`); a futás-ablakot a valós UTC-időhöz méri.

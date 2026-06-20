@@ -18,6 +18,7 @@ __pycache__/
 
 # kimenet
 predictions*.csv
+cron.log
 
 # lokális Claude-beállítás
 .claude/settings.local.json
