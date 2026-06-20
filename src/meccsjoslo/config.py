@@ -135,3 +135,21 @@ def tipply_publish_enabled(cfg: dict[str, str] | None = None) -> bool:
 def tipply_submit_enabled(cfg: dict[str, str] | None = None) -> bool:
     """Tényleges submit (nem csak dry-run) be van-e kapcsolva (`TIPPLY_SUBMIT`)."""
     return _truthy(_resolve(cfg).get("TIPPLY_SUBMIT"))
+
+
+DEFAULT_NTFY_URL = "https://ntfy.sh"
+DEFAULT_NTFY_TOPIC = "gergo_vb2026_tippek"
+
+
+def ntfy_url(cfg: dict[str, str] | None = None) -> str:
+    return _resolve(cfg).get("NTFY_URL", DEFAULT_NTFY_URL)
+
+
+def ntfy_topic(cfg: dict[str, str] | None = None) -> str:
+    return _resolve(cfg).get("NTFY_TOPIC", DEFAULT_NTFY_TOPIC)
+
+
+def ntfy_enabled(cfg: dict[str, str] | None = None) -> bool:
+    """ntfy.sh értesítés be van-e kapcsolva. Alapból IGEN; `NTFY_ENABLE=0` kikapcsolja."""
+    value = _resolve(cfg).get("NTFY_ENABLE")
+    return True if value is None else _truthy(value)

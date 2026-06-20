@@ -61,6 +61,26 @@ def test_sink_falls_back_to_english_name_when_tla_missing():
     assert calls[0][1].home == "Spain"
 
 
+def test_sink_sends_ntfy_per_tip():
+    events = []
+
+    class FakeNotifier:
+        def send(self, body, **kw):
+            events.append(body)
+            return True
+
+    sink = make_tipply_sink(
+        ENABLED,
+        publish=lambda *a: FillReport(status="submitted"),
+        sleep=lambda s: None,
+        team_names=NAMES,
+        notifier=FakeNotifier(),
+    )
+    sink(_result())
+    assert events and "Spanyolország 2:0 Szaúd-Arábia" in events[0]
+    assert "mentve" in events[0]
+
+
 def test_sink_none_when_publish_disabled():
     assert make_tipply_sink({**ENABLED, "TIPPLY_PUBLISH": "0"}) is None
 

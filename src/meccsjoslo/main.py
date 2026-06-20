@@ -18,6 +18,7 @@ from meccsjoslo.clients.football_data import FootballDataClient
 from meccsjoslo.graph import default_graph
 from meccsjoslo.logging_csv import append_prediction
 from meccsjoslo.nodes.predict import gemini_predictor
+from meccsjoslo.notify import make_notifier, notify_started
 from meccsjoslo.tipply.sink import make_tipply_sink
 
 
@@ -117,7 +118,9 @@ def main() -> None:
         model=model, api_key=config.gemini_api_key(cfg), langfuse=langfuse
     )
     graph = default_graph(client, predictor)
-    sink = make_tipply_sink(cfg)  # opcionális tipp.ly publikálás (no-op ha kikapcsolt)
+    notifier = make_notifier(cfg)
+    notify_started(notifier, f"napi futás (48h), modell: {model}")
+    sink = make_tipply_sink(cfg, notifier=notifier)  # opcionális tipp.ly + ntfy
     session_id = make_session_id(model)
     try:
         with session_scope(langfuse, session_id, model):

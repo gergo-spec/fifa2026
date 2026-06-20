@@ -15,6 +15,7 @@ from meccsjoslo.clients.football_data import FootballDataClient
 from meccsjoslo.graph import default_graph
 from meccsjoslo.main import combine_results, make_session_id, run_once, session_scope
 from meccsjoslo.nodes.predict import gemini_predictor
+from meccsjoslo.notify import make_notifier, notify_started
 from meccsjoslo.tipply.sink import make_tipply_sink
 
 
@@ -49,7 +50,9 @@ def main() -> None:
     )
     graph = default_graph(client, predictor)
 
-    sink = make_tipply_sink(cfg)  # opcionális tipp.ly publikálás
+    notifier = make_notifier(cfg)
+    notify_started(notifier, f"következő {hours}h, modell: {model}")
+    sink = make_tipply_sink(cfg, notifier=notifier)  # opcionális tipp.ly + ntfy
     now = datetime.now(timezone.utc)
     session_id = make_session_id(model)
     out_csv = config.PROJECT_ROOT / f"predictions_next{hours}h.csv"

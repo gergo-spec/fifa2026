@@ -41,8 +41,12 @@ def make_tipply_sink(
     sleep: Callable[[float], None] = time.sleep,
     pace_s: float = 4.0,
     team_names: dict[str, str] | None = None,
+    notifier=None,
 ) -> Callable[[dict], None] | None:
-    """`on_result` callback, vagy `None` ha a publikálás nincs bekapcsolva."""
+    """`on_result` callback, vagy `None` ha a publikálás nincs bekapcsolva.
+
+    Ha `notifier` kapott, meccsenként egy ntfy.sh értesítést is küld a tippről.
+    """
     cfg = cfg if cfg is not None else config.load_env()
     if not config.tipply_publish_enabled(cfg):
         return None
@@ -54,6 +58,8 @@ def make_tipply_sink(
     names = team_names if team_names is not None else load_team_names_hu()
 
     def on_result(result: dict) -> None:
+        from meccsjoslo.notify import notify_tip
+
         home = names.get(result["home_tla"], result.get("home_name"))
         away = names.get(result["away_tla"], result.get("away_name"))
         match = Match(home=home, away=away)
@@ -67,6 +73,7 @@ def make_tipply_sink(
             f"   tipp.ly: {home} {score.home_goals}:{score.away_goals} {away}"
             f" -> {report.status}{suffix}"
         )
+        notify_tip(notifier, home, away, score, report.status)
         sleep(pace_s)  # ember-tempó a böngésző-sessionök közt
 
     return on_result

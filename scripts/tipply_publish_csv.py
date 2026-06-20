@@ -15,6 +15,7 @@ import sys
 import time
 
 from meccsjoslo import config
+from meccsjoslo.notify import make_notifier, notify_started, notify_tip
 from meccsjoslo.tipply.publisher import publish_tip
 from meccsjoslo.tipply.sink import load_team_names_hu
 from meccsjoslo.tipply.state import Match, Score
@@ -38,6 +39,9 @@ def main() -> None:
     mode = "ÉLES SUBMIT" if submit else "dry-run"
     print(f"CSV: {csv_path}  | {len(rows)} meccs  | mód: {mode}  | overwrite: {overwrite}\n")
 
+    notifier = make_notifier(cfg)
+    notify_started(notifier, f"CSV publikálás ({mode}), {len(rows)} meccs")
+
     for r in rows:
         home = names.get(r["home_tla"], r["home_name"])
         away = names.get(r["away_tla"], r["away_name"])
@@ -56,6 +60,7 @@ def main() -> None:
         )
         reason = f" ({report.reason})" if report.reason else ""
         print(f"  {home} {score.home_goals}:{score.away_goals} {away} -> {report.status}{reason}", flush=True)
+        notify_tip(notifier, home, away, score, report.status)
         time.sleep(3)
 
 
