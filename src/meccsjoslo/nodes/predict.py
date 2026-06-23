@@ -11,9 +11,49 @@ Az LLM-hívás egy `predictor(prompt: str) -> dict` callable mögé van rejtve,
 
 from __future__ import annotations
 
+import logging
+import time
 from typing import Callable
 
 from meccsjoslo import config
+
+_LOG = logging.getLogger(__name__)
+
+# A Gemini néha átmeneti szerverhibát ad: 503 „high demand", 429 rate limit, ill.
+# 500/502/504. Ilyenkor NEM dobjuk el az egész 48h-futást egyetlen meccs miatt –
+# várunk és újrapróbálunk növekvő backoff-fal (~0,5 → 5 perc, összesen ~8,5 perc).
+# A nem-átmeneti hibákat (pl. 400/401/404) azonnal továbbdobjuk.
+_RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
+_RETRY_BACKOFF_SECONDS: tuple[float, ...] = (30.0, 60.0, 120.0, 300.0)
+
+
+def _invoke_with_retry(
+    invoke: Callable[[str], object],
+    prompt: str,
+    *,
+    backoff: tuple[float, ...] = _RETRY_BACKOFF_SECONDS,
+    sleep: Callable[[float], None] = time.sleep,
+) -> object:
+    """`invoke(prompt)` átmeneti Gemini-szerverhibánál backoff-fal újrapróbálva.
+
+    Csak `_RETRYABLE_STATUS` státuszú `google.genai` hibát próbál újra; egyébként
+    (és a backoff kimerülése után) az eredeti kivételt dobja tovább. A `sleep`
+    injektálható teszthez."""
+    from google.genai.errors import APIError
+
+    for attempt, wait in enumerate((*backoff, None)):
+        try:
+            return invoke(prompt)
+        except APIError as exc:
+            status = getattr(exc, "code", None)
+            if status not in _RETRYABLE_STATUS or wait is None:
+                raise
+            _LOG.warning(
+                "Gemini HTTP %s – újrapróba %d/%d %.0f mp múlva…",
+                status, attempt + 1, len(backoff), wait,
+            )
+            sleep(wait)
+    raise AssertionError("elérhetetlen ág")
 
 _REQUIRED_NUMERIC = (
     "prob_home",
@@ -253,7 +293,7 @@ def gemini_predictor(
 
     def predict(prompt: str) -> dict:
         if langfuse is None:
-            return _parse_llm_json(llm.invoke(prompt))
+            return _parse_llm_json(_invoke_with_retry(llm.invoke, prompt))
         with langfuse.start_as_current_observation(
             name="gemini-predict",
             as_type="generation",
@@ -261,7 +301,7 @@ def gemini_predictor(
             input=prompt,
             model_parameters={"temperature": 0.2},
         ) as generation:
-            resp = llm.invoke(prompt)
+            resp = _invoke_with_retry(llm.invoke, prompt)
             result = _parse_llm_json(resp)
             generation.update(output=result, usage_details=_usage_details(resp))
             return result

@@ -1,8 +1,9 @@
 """Story 009 – predict node (Gemini, strukturált kimenet)."""
 
 import pytest
+from google.genai.errors import ClientError, ServerError
 
-from meccsjoslo.nodes.predict import build_prompt, make_predict
+from meccsjoslo.nodes.predict import _invoke_with_retry, build_prompt, make_predict
 
 
 def base_state(**extra):
@@ -140,3 +141,58 @@ def test_zero_sum_probs_are_invalid_and_raise():
     bad = dict(GOOD, prob_home=0, prob_draw=0, prob_away=0)
     with pytest.raises(RuntimeError):
         make_predict(lambda prompt: bad)(base_state())
+
+
+# -- átmeneti Gemini-szerverhibák (503 high demand) kezelése -------------------
+
+def _server_error(status):
+    return ServerError(status, {"error": {"code": status, "status": "UNAVAILABLE"}})
+
+
+def test_invoke_retries_on_503_then_succeeds():
+    waits, calls = [], []
+
+    def flaky(prompt):
+        calls.append(prompt)
+        if len(calls) < 3:
+            raise _server_error(503)
+        return "OK"
+
+    out = _invoke_with_retry(flaky, "p", backoff=(1.0, 2.0, 3.0), sleep=waits.append)
+    assert out == "OK"
+    assert len(calls) == 3          # két bukás után siker
+    assert waits == [1.0, 2.0]      # backoff a tényleges retry-okhoz
+
+
+def test_invoke_gives_up_after_backoff_exhausted():
+    def always_503(prompt):
+        raise _server_error(503)
+
+    with pytest.raises(ServerError):
+        _invoke_with_retry(always_503, "p", backoff=(1.0,), sleep=lambda _: None)
+
+
+def test_invoke_retries_429_rate_limit():
+    calls = []
+
+    def flaky(prompt):
+        calls.append(prompt)
+        if len(calls) == 1:
+            raise ClientError(429, {"error": {"code": 429}})
+        return "OK"
+
+    out = _invoke_with_retry(flaky, "p", backoff=(1.0,), sleep=lambda _: None)
+    assert out == "OK"
+    assert len(calls) == 2
+
+
+def test_invoke_does_not_retry_client_error_400():
+    calls = []
+
+    def bad_request(prompt):
+        calls.append(prompt)
+        raise ClientError(400, {"error": {"code": 400}})
+
+    with pytest.raises(ClientError):
+        _invoke_with_retry(bad_request, "p", backoff=(1.0, 2.0), sleep=lambda _: None)
+    assert len(calls) == 1          # 400 nem átmeneti → nincs újrapróba
