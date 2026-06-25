@@ -19,12 +19,8 @@ from meccsjoslo import config
 
 _LOG = logging.getLogger(__name__)
 
-# A Gemini néha átmeneti szerverhibát ad: 503 „high demand", 429 rate limit, ill.
-# 500/502/504. Ilyenkor NEM dobjuk el az egész 48h-futást egyetlen meccs miatt –
-# várunk és újrapróbálunk növekvő backoff-fal (~0,5 → 5 perc, összesen ~8,5 perc).
-# A nem-átmeneti hibákat (pl. 400/401/404) azonnal továbbdobjuk.
 _RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
-_RETRY_BACKOFF_SECONDS: tuple[float, ...] = (30.0, 60.0, 120.0, 300.0)
+_RETRY_BACKOFF_SECONDS: tuple[float, ...] = (30.0, 60.0, 120.0, 180.0, 300.0, 600.0)
 
 
 def _invoke_with_retry(
@@ -277,33 +273,56 @@ def gemini_predictor(
     model: str | None = None,
     api_key: str | None = None,
     langfuse=None,
+    fallback_model: str | None = None,
 ) -> Callable[[str], dict]:
     """Éles predictor: Gemint hív strukturált kimenettel (nincs unit-teszt – hálózat).
 
     Ha `langfuse` kliens kapott, minden LLM-hívás egy Langfuse „generation"
-    span-ként naplózódik (modell, prompt, válasz)."""
+    span-ként naplózódik (modell, prompt, válasz). Ha `fallback_model` adott és
+    az elsődleges modell kimerítette a retry-ket, a tartalék modellre vált."""
     from langchain_google_genai import ChatGoogleGenerativeAI
 
     model = model or config.gemini_model()
+    api_key = api_key or config.gemini_api_key()
     llm = ChatGoogleGenerativeAI(
         model=model,
-        google_api_key=api_key or config.gemini_api_key(),
+        google_api_key=api_key,
         temperature=0.2,
     )
 
-    def predict(prompt: str) -> dict:
+    def _call(llm_instance, model_name, prompt):
         if langfuse is None:
-            return _parse_llm_json(_invoke_with_retry(llm.invoke, prompt))
+            return _parse_llm_json(_invoke_with_retry(llm_instance.invoke, prompt))
         with langfuse.start_as_current_observation(
             name="gemini-predict",
             as_type="generation",
-            model=model,
+            model=model_name,
             input=prompt,
             model_parameters={"temperature": 0.2},
         ) as generation:
-            resp = _invoke_with_retry(llm.invoke, prompt)
+            resp = _invoke_with_retry(llm_instance.invoke, prompt)
             result = _parse_llm_json(resp)
             generation.update(output=result, usage_details=_usage_details(resp))
             return result
+
+    def predict(prompt: str) -> dict:
+        from google.genai.errors import APIError
+
+        try:
+            return _call(llm, model, prompt)
+        except APIError as exc:
+            status = getattr(exc, "code", None)
+            if not fallback_model or fallback_model == model or status not in _RETRYABLE_STATUS:
+                raise
+            _LOG.warning(
+                "Elsődleges modell (%s) kimerült – fallback: %s",
+                model, fallback_model,
+            )
+            fb_llm = ChatGoogleGenerativeAI(
+                model=fallback_model,
+                google_api_key=api_key,
+                temperature=0.2,
+            )
+            return _call(fb_llm, fallback_model, prompt)
 
     return predict

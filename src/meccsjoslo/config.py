@@ -79,6 +79,11 @@ def gemini_model(cfg: dict[str, str] | None = None) -> str:
     return _resolve(cfg).get("GEMINI-MODEL", DEFAULT_GEMINI_MODEL)
 
 
+def gemini_fallback_model(cfg: dict[str, str] | None = None) -> str | None:
+    """Tartalék modell, ha az elsődleges kimerítette a retry-ket (`GEMINI-FALLBACK-MODEL`)."""
+    return _resolve(cfg).get("GEMINI-FALLBACK-MODEL")
+
+
 def langfuse_client(cfg: dict[str, str] | None = None):
     """Langfuse kliens a `.env`-ből, vagy `None`, ha nincs konfigurálva.
 

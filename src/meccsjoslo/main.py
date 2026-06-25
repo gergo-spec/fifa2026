@@ -112,10 +112,12 @@ def run_once(
 def main() -> None:
     cfg = config.load_env()
     model = config.gemini_model(cfg)
+    fallback_model = config.gemini_fallback_model(cfg)
     client = FootballDataClient(token=config.football_data_token(cfg))
     langfuse = config.langfuse_client(cfg)
     predictor = gemini_predictor(
-        model=model, api_key=config.gemini_api_key(cfg), langfuse=langfuse
+        model=model, api_key=config.gemini_api_key(cfg), langfuse=langfuse,
+        fallback_model=fallback_model,
     )
     graph = default_graph(client, predictor)
     notifier = make_notifier(cfg)
