@@ -1,6 +1,6 @@
 """ntfy.sh értesítő – endpoint, formátum, kapuzás, best-effort hibakezelés."""
 
-from meccsjoslo.notify import Notifier, make_notifier, notify_started, notify_tip
+from meccsjoslo.notify import Notifier, make_notifier, notify_started, notify_tip, notify_tip_error
 from meccsjoslo.tipply.state import Score
 
 
@@ -56,6 +56,28 @@ def test_notify_started_formats_message():
     assert "elindult" in calls[0][1] and "48h" in calls[0][1]
 
 
+def test_notify_tip_includes_utc_date():
+    calls, transport = _recorder()
+    n = Notifier("https://ntfy.sh", "t", transport=transport)
+    notify_tip(n, "Brazília", "Argentína", Score(home_goals=1, away_goals=2), "submitted",
+               utc_date="2026-06-28T20:00:00Z")
+    assert "2026-06-28 20:00 UTC" in calls[0][1]
+
+
+def test_notify_tip_error_sends_warning():
+    calls, transport = _recorder()
+    n = Notifier("https://ntfy.sh", "t", transport=transport)
+    notify_tip_error(n, "Brazília", "Argentína", ValueError("nem találja a mezőt"),
+                     utc_date="2026-06-28T20:00:00Z")
+    _, body, headers = calls[0]
+    assert "tipp.ly hiba" in body
+    assert "Brazília vs Argentína" in body
+    assert "2026-06-28 20:00 UTC" in body
+    assert "ValueError" in body
+    assert headers.get("Tags") == "warning"
+
+
 def test_notify_helpers_noop_when_notifier_none():
     notify_started(None, "x")
     notify_tip(None, "a", "b", Score(home_goals=1, away_goals=1), "filled")
+    notify_tip_error(None, "a", "b", RuntimeError("x"))

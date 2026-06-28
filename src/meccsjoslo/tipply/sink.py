@@ -58,22 +58,27 @@ def make_tipply_sink(
     names = team_names if team_names is not None else load_team_names_hu()
 
     def on_result(result: dict) -> None:
-        from meccsjoslo.notify import notify_tip
+        from meccsjoslo.notify import notify_tip, notify_tip_error
 
         home = names.get(result["home_tla"], result.get("home_name"))
         away = names.get(result["away_tla"], result.get("away_name"))
+        utc_date = result.get("utc_date")
         match = Match(home=home, away=away)
         score = Score(
             home_goals=round(float(result["expected_goals_home"])),
             away_goals=round(float(result["expected_goals_away"])),
         )
-        report = publish(tcfg, match, score, submit)
-        suffix = f" ({report.reason})" if getattr(report, "reason", None) else ""
-        print(
-            f"   tipp.ly: {home} {score.home_goals}:{score.away_goals} {away}"
-            f" -> {report.status}{suffix}"
-        )
-        notify_tip(notifier, home, away, score, report.status)
+        try:
+            report = publish(tcfg, match, score, submit)
+            suffix = f" ({report.reason})" if getattr(report, "reason", None) else ""
+            print(
+                f"   tipp.ly: {home} {score.home_goals}:{score.away_goals} {away}"
+                f" -> {report.status}{suffix}"
+            )
+            notify_tip(notifier, home, away, score, report.status, utc_date=utc_date)
+        except Exception as exc:
+            print(f"   tipp.ly hiba: {type(exc).__name__}: {exc}")
+            notify_tip_error(notifier, home, away, exc, utc_date=utc_date)
         sleep(pace_s)  # ember-tempó a böngésző-sessionök közt
 
     return on_result

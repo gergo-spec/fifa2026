@@ -67,9 +67,37 @@ def notify_started(notifier: Notifier | None, context: str = "") -> None:
     notifier.send(f"🚀 A meccsjósló elindult{suffix}", title="VB2026 tippek", tags="rocket")
 
 
-def notify_tip(notifier: Notifier | None, home: str, away: str, score: Score, status: str) -> None:
+def _fmt_utc(utc_date: str | None) -> str:
+    if not utc_date:
+        return ""
+    return f" [{utc_date[:16].replace('T', ' ')} UTC]"
+
+
+def notify_tip(
+    notifier: Notifier | None,
+    home: str,
+    away: str,
+    score: Score,
+    status: str,
+    *,
+    utc_date: str | None = None,
+) -> None:
     if notifier is None:
         return
     label = _STATUS_HU.get(status, status)
-    body = f"{home} {score.home_goals}:{score.away_goals} {away} — {label}"
+    body = f"{home} {score.home_goals}:{score.away_goals} {away} — {label}{_fmt_utc(utc_date)}"
     notifier.send(body, title="VB2026 tipp", tags="soccer")
+
+
+def notify_tip_error(
+    notifier: Notifier | None,
+    home: str,
+    away: str,
+    exc: Exception,
+    *,
+    utc_date: str | None = None,
+) -> None:
+    if notifier is None:
+        return
+    body = f"❌ tipp.ly hiba: {home} vs {away}{_fmt_utc(utc_date)}\n{type(exc).__name__}: {exc}"
+    notifier.send(body, title="VB2026 tipp – HIBA", tags="warning")
