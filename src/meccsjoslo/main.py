@@ -98,6 +98,10 @@ def run_once(
         kickoff = _parse(match["utcDate"])
         if not (now <= kickoff <= cutoff):  # pontos időablak
             continue
+        home_tla = (match.get("homeTeam") or {}).get("tla")
+        away_tla = (match.get("awayTeam") or {}).get("tla")
+        if not home_tla or not away_tla:  # TBD csapatok (egyenes kieséses előzetes)
+            continue
         detail = client.match(match["id"])  # a venue az egyedi meccs-lekérésben van
         state = _input_state(match, detail.get("venue"))
         result = graph.invoke(state)
